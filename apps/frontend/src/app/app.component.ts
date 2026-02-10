@@ -1,34 +1,37 @@
 // apps/frontend/src/app/app.component.ts
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, OnDestroy } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { KeycloakService } from './auth/keycloak.service';
+import { Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   standalone: true,
-  imports: [RouterModule],
+  imports: [RouterModule, CommonModule],
   selector: 'app-root',
   template: `
     <div class="container">
       <header>
         <h1>Academic System</h1>
-        
-        @if (!isLoggedIn) {
+
+        @if ((isAuthenticated$ | async) === false) {
           <div class="auth-section">
             <p>Você não está autenticado</p>
             <button (click)="login()" class="btn-primary">Login</button>
           </div>
         }
 
-        @if (isLoggedIn) {
+        @if (isAuthenticated$ | async) {
           <div class="auth-section">
-            <p>Bem-vindo, {{ userEmail }}</p>
-            <p>Roles: {{ userRoles.join(', ') }}</p>
+            <p>Bem-vindo, {{ (user$ | async)?.['email'] || 'N/A' }}</p>
+            <p>Roles: {{ (roles$ | async)?.join(', ') }}</p>
             <button (click)="logout()" class="btn-secondary">Logout</button>
           </div>
         }
       </header>
 
-      @if (isLoggedIn) {
+      @if (isAuthenticated$ | async) {
         <nav>
           <h2>Navegação por Role:</h2>
           <ul>
@@ -61,133 +64,155 @@ import { KeycloakService } from './auth/keycloak.service';
       </main>
     </div>
   `,
-  styles: [`
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-      font-family: system-ui, -apple-system, sans-serif;
-    }
+  styles: [
+    `
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+      }
 
-    header {
-      background: #f5f5f5;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
+      header {
+        background: #f5f5f5;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
 
-    h1 {
-      margin: 0 0 10px 0;
-      color: #333;
-    }
+      h1 {
+        margin: 0 0 10px 0;
+        color: #333;
+      }
 
-    .auth-section {
-      margin-top: 10px;
-    }
+      .auth-section {
+        margin-top: 10px;
+      }
 
-    .auth-section p {
-      margin: 5px 0;
-    }
+      .auth-section p {
+        margin: 5px 0;
+      }
 
-    nav {
-      background: #e0e0e0;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
+      nav {
+        background: #e0e0e0;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
 
-    nav h2 {
-      margin-top: 0;
-      font-size: 1.2em;
-    }
+      nav h2 {
+        margin-top: 0;
+        font-size: 1.2em;
+      }
 
-    nav ul {
-      list-style: none;
-      padding: 0;
-      margin: 10px 0 0 0;
-    }
+      nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 10px 0 0 0;
+      }
 
-    nav li {
-      margin: 10px 0;
-    }
+      nav li {
+        margin: 10px 0;
+      }
 
-    nav a {
-      color: #333;
-      text-decoration: none;
-      padding: 8px 12px;
-      display: inline-block;
-      border-radius: 4px;
-      transition: background 0.2s;
-    }
+      nav a {
+        color: #333;
+        text-decoration: none;
+        padding: 8px 12px;
+        display: inline-block;
+        border-radius: 4px;
+        transition: background 0.2s;
+      }
 
-    nav a:hover {
-      background: #ccc;
-    }
+      nav a:hover {
+        background: #ccc;
+      }
 
-    nav a.active {
-      background: #007bff;
-      color: white;
-    }
+      nav a.active {
+        background: #007bff;
+        color: white;
+      }
 
-    button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: opacity 0.2s;
-    }
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: opacity 0.2s;
+      }
 
-    .btn-primary {
-      background: #007bff;
-      color: white;
-    }
+      .btn-primary {
+        background: #007bff;
+        color: white;
+      }
 
-    .btn-secondary {
-      background: #6c757d;
-      color: white;
-    }
+      .btn-secondary {
+        background: #6c757d;
+        color: white;
+      }
 
-    button:hover {
-      opacity: 0.8;
-    }
+      button:hover {
+        opacity: 0.8;
+      }
 
-    main {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      min-height: 300px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-  `]
+      main {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        min-height: 300px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+    `,
+  ],
 })
-export class AppComponent implements OnInit {
-  keycloak = inject(KeycloakService);
+export class AppComponent implements OnInit, OnDestroy {
+  private keycloak = inject(KeycloakService);
+  private destroy$ = new Subject<void>();
+
+  // Observables públicos
+  isAuthenticated$: Observable<boolean>;
+  user$: Observable<any>;
+  roles$: Observable<string[]>;
+
+  constructor() {
+    this.isAuthenticated$ = this.keycloak.isAuthenticated$;
+    this.user$ = this.keycloak.user$;
+    this.roles$ = this.keycloak.roles$;
+  }
 
   ngOnInit() {
     console.log('🚀 App initialized');
-    console.log('📝 Is logged in:', this.isLoggedIn);
-    console.log('👤 User roles:', this.userRoles);
+
+    // Subscrever para logs (opcional)
+    this.isAuthenticated$.pipe(takeUntil(this.destroy$)).subscribe((isAuth) => {
+      console.log('📝 Autenticado:', isAuth);
+    });
+
+    this.roles$.pipe(takeUntil(this.destroy$)).subscribe((roles) => {
+      console.log('👤 Roles:', roles);
+    });
   }
 
-  get isLoggedIn(): boolean {
-    return this.keycloak.isLoggedIn();
-  }
-
-  get userEmail(): string {
-    const profile = this.keycloak.userProfile;
-    return profile?.['email'] || 'N/A';
-  }
-
-  get userRoles(): string[] {
-    return this.keycloak.roles;
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   login(): void {
-    this.keycloak.login();
+    this.keycloak.login().subscribe({
+      next: () => console.log('Login iniciado'),
+      error: (error) => console.error('Erro no login:', error),
+    });
   }
 
   logout(): void {
-    this.keycloak.logout();
+    this.keycloak.logout().subscribe({
+      next: () => console.log('Logout realizado'),
+      error: (error) => console.error('Erro no logout:', error),
+    });
   }
 }
