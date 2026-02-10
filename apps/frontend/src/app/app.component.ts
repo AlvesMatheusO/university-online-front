@@ -13,7 +13,7 @@ import { takeUntil } from 'rxjs/operators';
   template: `
     <div class="container">
       <header>
-        <h1>Academic System</h1>
+        <h1>Universidade</h1>
 
         @if ((isAuthenticated$ | async) === false) {
           <div class="auth-section">
@@ -24,14 +24,15 @@ import { takeUntil } from 'rxjs/operators';
 
         @if (isAuthenticated$ | async) {
           <div class="auth-section">
-            <p>Bem-vindo, {{ (user$ | async)?.['email'] || 'N/A' }}</p>
+            <p>Bem-vindo, {{ (user$ | async)?.['name'] || 'N/A' }}</p>
+            <!-- Para teste!!!! remover -->
             <p>Roles: {{ (roles$ | async)?.join(', ') }}</p>
             <button (click)="logout()" class="btn-secondary">Logout</button>
           </div>
         }
       </header>
 
-      @if (isAuthenticated$ | async) {
+      <!-- @if (isAuthenticated$ | async) {
         <nav>
           <h2>Navegação por Role:</h2>
           <ul>
@@ -57,7 +58,7 @@ import { takeUntil } from 'rxjs/operators';
             </li>
           </ul>
         </nav>
-      }
+      } -->
 
       <main>
         <router-outlet></router-outlet>

@@ -17,14 +17,24 @@ export const appRoutes: Route[] = [
     canActivate: [roleGuard('ADMIN')],
     loadComponent: () => import('./admin/admin').then((m) => m.Admin),
   },
+  // {
+  //   path: 'coordinator',
+  //   canActivate: [roleGuard('COORDINATOR')],
+  //   loadComponent: () =>
+  //     import('./pages/coordinator.component').then(
+  //       (m) => m.CoordinatorComponent,
+  //     ),
+  // },
+
   {
     path: 'coordinator',
     canActivate: [roleGuard('COORDINATOR')],
-    loadComponent: () =>
-      import('./pages/coordinator.component').then(
-        (m) => m.CoordinatorComponent,
+    loadChildren: () =>
+      import('./pages/coordinator.routes').then(
+        (m) => m.coordinatorRoutes,
       ),
   },
+
   {
     path: 'student',
     canActivate: [roleGuard('STUDENT')],
