@@ -5,6 +5,9 @@ import { appRoutes } from './app.routes';
 import { KeycloakService } from './auth/keycloak.service';
 import { authInterceptor } from './auth/auth-interceptor';
 
+import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeng/themes/aura';
+
 function initializeKeycloak(keycloak: KeycloakService) {
   return () => keycloak.init();
 }
@@ -19,5 +22,13 @@ export const appConfig: ApplicationConfig = {
       multi: true,
       deps: [KeycloakService],
     },
+    providePrimeNG({
+      theme: {
+        preset: Aura,
+        options: {
+            darkModeSelector: false
+        }
+      },
+    }),
   ],
 };

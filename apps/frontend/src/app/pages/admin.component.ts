@@ -1,91 +1,57 @@
-// apps/frontend/src/app/pages/admin.component.ts
-import { Component, OnInit, inject, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { UserService, User } from '../../services/user.service';
-import { Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Component, inject } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { KeycloakService } from '../auth/keycloak.service';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   standalone: true,
-  imports: [CommonModule],
+  selector: 'app-admin',
+  imports: [ButtonModule, RouterOutlet],
   template: `
-    <h2>Painel do Administrador</h2>
-    <p>Apenas usuários com role ADMIN podem ver esta página.</p>
-
-    <button (click)="loadUsers()" class="btn-primary">Carregar Usuários</button>
-
-    @if (users$ | async; as users) {
-      <div class="users-list">
-        <h3>Usuários ({{ users.length }})</h3>
-        <ul>
-          @for (user of users; track user.id) {
-            <li>
-              <strong>{{ user.name }}</strong> - {{ user.email }} ({{
-                user.role
-              }})
-            </li>
-          }
-        </ul>
-      </div>
-    }
+    <div class="admin-container">
+      <h2>Painel do Administrador</h2>
+      <section class="content">
+        <header>
+          <span>Bem-vindo Administrador</span>
+          <p-button
+            label="Logout"
+            icon="pi pi-sign-out"
+            (onClick)="logout()">
+          </p-button>
+        </header>
+        <router-outlet></router-outlet>
+      </section>
+    </div>
   `,
-  styles: [
-    `
-      .btn-primary {
-        background: #007bff;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-bottom: 20px;
-      }
+  styles: [`
+    .admin-container {
+      padding: 20px;
+    }
 
-      .btn-primary:hover {
-        opacity: 0.8;
-      }
+    .content {
+      margin-top: 20px;
+    }
 
-      .users-list {
-        margin-top: 20px;
-      }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
 
-      ul {
-        list-style: none;
-        padding: 0;
-      }
-
-      li {
-        padding: 10px;
-        margin: 5px 0;
-        background: #f5f5f5;
-        border-radius: 4px;
-      }
-    `,
-  ],
+    header span {
+      font-size: 18px;
+      font-weight: 500;
+    }
+  `]
 })
-export class AdminComponent implements OnInit, OnDestroy {
-  private userService = inject(UserService);
-  private destroy$ = new Subject<void>();
-
-  users$!: Observable<User[]>;
-
-  ngOnInit() {
-    // Inicializar o observable
-    this.users$ = this.userService.users$;
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  loadUsers() {
-    this.userService
-      .getUsers()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (users) => console.log('Usuários carregados:', users),
-        error: (error) => console.error('Erro:', error),
-      });
+export class AdminComponent {
+  private keycloak = inject(KeycloakService);
+  
+  logout() {
+    this.keycloak.logout().subscribe();
   }
 }

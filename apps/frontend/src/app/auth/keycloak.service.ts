@@ -12,11 +12,11 @@ export interface AuthState {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class KeycloakService {
   private keycloakInstance: Keycloak;
-  
+
   // BehaviorSubject para manter o estado de autenticação
   private authState$ = new BehaviorSubject<AuthState>({
     isAuthenticated: false,
@@ -26,21 +26,25 @@ export class KeycloakService {
   });
 
   // Observables públicos (readonly)
-  readonly isAuthenticated$: Observable<boolean> = this.authState$
-    .pipe(map(state => state.isAuthenticated));
+  readonly isAuthenticated$: Observable<boolean> = this.authState$.pipe(
+    map((state) => state.isAuthenticated),
+  );
 
-  readonly user$: Observable<any | null> = this.authState$
-    .pipe(map(state => state.user));
+  readonly user$: Observable<any | null> = this.authState$.pipe(
+    map((state) => state.user),
+  );
 
-  readonly roles$: Observable<string[]> = this.authState$
-    .pipe(map(state => state.roles));
+  readonly roles$: Observable<string[]> = this.authState$.pipe(
+    map((state) => state.roles),
+  );
 
-  readonly token$: Observable<string | null> = this.authState$
-    .pipe(map(state => state.token));
+  readonly token$: Observable<string | null> = this.authState$.pipe(
+    map((state) => state.token),
+  );
 
   constructor() {
     console.log('🔧 Construindo KeycloakService...');
-    
+
     this.keycloakInstance = new Keycloak({
       url: 'http://localhost:8180',
       realm: 'academic-system',
@@ -82,17 +86,28 @@ export class KeycloakService {
     return from(
       this.keycloakInstance.login({
         redirectUri: window.location.origin,
-      })
+      }),
     );
   }
-
   logout(): Observable<void> {
     console.log('👋 Fazendo logout...');
+
     return from(
       this.keycloakInstance.logout({
-        redirectUri: window.location.origin
-      })
+        redirectUri: window.location.origin + '/public', // ← Redirecionar para /public
+      }),
     ).pipe(
+      catchError((err) => {
+        console.error('❌ Erro no logout:', err);
+        // Mesmo com erro, limpar estado local
+        this.authState$.next({
+          isAuthenticated: false,
+          user: null,
+          roles: [],
+          token: null,
+        });
+        return from(Promise.resolve());
+      }),
       map(() => {
         this.authState$.next({
           isAuthenticated: false,
@@ -100,7 +115,7 @@ export class KeycloakService {
           roles: [],
           token: null,
         });
-      })
+      }),
     );
   }
 
@@ -118,9 +133,7 @@ export class KeycloakService {
   }
 
   hasRole$(role: string): Observable<boolean> {
-    return this.roles$.pipe(
-      map(roles => roles.includes(role))
-    );
+    return this.roles$.pipe(map((roles) => roles.includes(role)));
   }
 
   get userProfile(): any {
@@ -150,19 +163,21 @@ export class KeycloakService {
 
   private setupTokenRefresh(): void {
     console.log('⏰ Configurando atualização automática de token...');
-    
+
     // Usar interval do RxJS
-    interval(30000).pipe(
-      switchMap(() => from(this.keycloakInstance.updateToken(70))),
-      filter(refreshed => refreshed),
-    ).subscribe({
-      next: () => {
-        console.log('🔄 Token atualizado');
-        this.updateAuthState();
-      },
-      error: (error) => {
-        console.error('❌ Falha ao atualizar token:', error);
-      }
-    });
+    interval(30000)
+      .pipe(
+        switchMap(() => from(this.keycloakInstance.updateToken(70))),
+        filter((refreshed) => refreshed),
+      )
+      .subscribe({
+        next: () => {
+          console.log('🔄 Token atualizado');
+          this.updateAuthState();
+        },
+        error: (error) => {
+          console.error('❌ Falha ao atualizar token:', error);
+        },
+      });
   }
 }

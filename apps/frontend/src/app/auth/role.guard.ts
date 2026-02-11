@@ -9,21 +9,27 @@ export const roleGuard = (requiredRole: string): CanActivateFn => {
     const keycloak = inject(KeycloakService);
     const router = inject(Router);
 
-    // Verificar de forma síncrona primeiro
-    if (!keycloak.isLoggedIn()) {
-      keycloak.login().subscribe();
-      return false;
-    }
+    console.log(`🛡️ Guard verificando role: ${requiredRole}`);
 
-    // Verificar role de forma reativa
-    return keycloak.hasRole$(requiredRole).pipe(
+    return keycloak.isAuthenticated$.pipe(
       take(1),
-      map(hasRole => {
+      map(isAuth => {
+        if (!isAuth) {
+          console.log('❌ Não autenticado, redirecionando para login');
+          keycloak.login().subscribe();
+          return false;
+        }
+
+        const hasRole = keycloak.hasRole(requiredRole);
+        console.log(`🎭 Usuário tem role ${requiredRole}?`, hasRole);
+        console.log('🎭 Roles do usuário:', keycloak.roles);
+
         if (!hasRole) {
-          console.warn(`Acesso negado. Role necessária: ${requiredRole}`);
+          console.log(`⚠️ Acesso negado. Role necessária: ${requiredRole}`);
           router.navigate(['/unauthorized']);
           return false;
         }
+
         return true;
       })
     );

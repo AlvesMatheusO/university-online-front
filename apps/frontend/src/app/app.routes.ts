@@ -1,11 +1,14 @@
+// apps/frontend/src/app/app.routes.ts
 import { Route } from '@angular/router';
 import { roleGuard } from './auth/role.guard';
 
 export const appRoutes: Route[] = [
   {
     path: '',
-    redirectTo: '/public',
-    pathMatch: 'full',
+    loadComponent: () =>
+      import('./auth/auth-redirect.component').then(
+        (m) => m.AuthRedirectComponent,
+      ),
   },
   {
     path: 'public',
@@ -15,26 +18,15 @@ export const appRoutes: Route[] = [
   {
     path: 'admin',
     canActivate: [roleGuard('ADMIN')],
-    loadComponent: () => import('./admin/admin').then((m) => m.Admin),
+    loadComponent: () => 
+      import('./admin/admin.component').then((m) => m.AdminComponent),  // ← MUDANÇA AQUI
   },
-  // {
-  //   path: 'coordinator',
-  //   canActivate: [roleGuard('COORDINATOR')],
-  //   loadComponent: () =>
-  //     import('./pages/coordinator.component').then(
-  //       (m) => m.CoordinatorComponent,
-  //     ),
-  // },
-
   {
     path: 'coordinator',
     canActivate: [roleGuard('COORDINATOR')],
     loadChildren: () =>
-      import('./pages/coordinator.routes').then(
-        (m) => m.coordinatorRoutes,
-      ),
+      import('./pages/coordinator.routes').then((m) => m.coordinatorRoutes),
   },
-
   {
     path: 'student',
     canActivate: [roleGuard('STUDENT')],
@@ -47,5 +39,9 @@ export const appRoutes: Route[] = [
       import('./pages/unauthotized.component').then(
         (m) => m.UnauthorizedComponent,
       ),
+  },
+  {
+    path: '**',
+    redirectTo: '',
   },
 ];
