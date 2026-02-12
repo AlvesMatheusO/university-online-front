@@ -119,7 +119,14 @@ export class KeycloakService {
     );
   }
 
-  // Métodos síncronos (para compatibilidade)
+  get tokenParsed(): any {
+    return this.keycloakInstance.tokenParsed;
+  }
+
+  get userId(): string | undefined {
+    return this.keycloakInstance.tokenParsed?.sub;
+  }
+
   get token(): string | undefined {
     return this.keycloakInstance.token;
   }

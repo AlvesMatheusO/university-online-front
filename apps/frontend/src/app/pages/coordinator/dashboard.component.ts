@@ -4,7 +4,6 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { KeycloakService } from '../../auth/keycloak.service';
 import { ButtonModule } from 'primeng/button';
-import { ClassesListComponent } from './classes-list.component';
 
 @Component({
   standalone: true,
@@ -12,7 +11,6 @@ import { ClassesListComponent } from './classes-list.component';
     CommonModule,
     RouterModule,
     ButtonModule,
-    ClassesListComponent,
   ],
   template: `
     <div class="layout">
@@ -100,7 +98,7 @@ import { ClassesListComponent } from './classes-list.component';
         align-items: center;
         padding: 1.5rem 2rem;
         background: white;
-        border-bottom: 1px solid #e5e7eb;
+        border-border: 1px solid #e5e7eb;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
       }
 
@@ -112,7 +110,7 @@ import { ClassesListComponent } from './classes-list.component';
     `,
   ],
 })
-export class DashboardHomeComponent {
+export class DashboardHomeComponent {  
   private keycloak = inject(KeycloakService);
 
   user$ = this.keycloak.user$;

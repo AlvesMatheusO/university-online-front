@@ -4,6 +4,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { appRoutes } from './app.routes';
 import { KeycloakService } from './auth/keycloak.service';
 import { authInterceptor } from './auth/auth-interceptor';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
@@ -15,6 +16,7 @@ function initializeKeycloak(keycloak: KeycloakService) {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(appRoutes),
+    provideAnimations(),
     provideHttpClient(withInterceptors([authInterceptor])),
     {
       provide: APP_INITIALIZER,
@@ -26,8 +28,8 @@ export const appConfig: ApplicationConfig = {
       theme: {
         preset: Aura,
         options: {
-            darkModeSelector: false
-        }
+          darkModeSelector: false,
+        },
       },
     }),
   ],

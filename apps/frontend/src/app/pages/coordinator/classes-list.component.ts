@@ -1,20 +1,38 @@
-// apps/frontend/src/app/pages/coordinator/classes-list.component.ts
 import { Component, OnInit, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { ClassService } from 'apps/frontend/src/services/class.service';
 import { ClassCardComponent } from '../../components/card/class-card.component';
+import { ClassFormModalComponent } from '../../components/modal/class-form-modal.component';
 import { Subject, takeUntil } from 'rxjs';
-
 @Component({
   selector: 'app-classes-page',
   standalone: true,
-  imports: [CommonModule, ClassCardComponent, FormsModule],
+  imports: [
+    CommonModule,
+    ClassCardComponent,
+    FormsModule,
+    ButtonModule,
+    ClassFormModalComponent,
+  ],
   template: `
     <div class="classes-page">
       <!-- Barra de pesquisa e filtros -->
       <div class="search-bar">
+        <div class="search-header">
+          <h2>Turmas</h2>
+          <p-button
+            label="Nova Turma"
+            icon="pi pi-plus"
+            [style]="{
+              'background-color': '#1e293b',
+              'border-color': '#1e293b',
+            }"
+            (onClick)="showModal = true"
+          />
+        </div>
         <div class="search-input">
           <i class="pi pi-search"></i>
           <input
@@ -72,6 +90,11 @@ import { Subject, takeUntil } from 'rxjs';
         }
       }
     </div>
+
+    <app-class-form-modal
+      [(visible)]="showModal"
+      (classCreated)="onClassCreated($event)"
+    />
   `,
   styles: [
     `
@@ -79,6 +102,17 @@ import { Subject, takeUntil } from 'rxjs';
         padding: 2rem;
         max-width: 1600px;
         margin: 0 auto;
+      }
+
+      .search-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .search-header h2 {
+        margin: 0;
       }
 
       .search-bar {
@@ -232,6 +266,7 @@ export class ClassesListComponent implements OnInit, OnDestroy {
   searchTerm = '';
   statusFilter = '';
   sortBy = '';
+  showModal = false;
 
   ngOnInit() {
     this.loadClasses();
@@ -254,6 +289,11 @@ export class ClassesListComponent implements OnInit, OnDestroy {
           console.error('❌ Erro ao carregar turmas:', error);
         },
       });
+  }
+
+  onClassCreated(newClass: any) {
+    console.log('🎉 Nova turma criada:', newClass);
+    // A lista será atualizada automaticamente pelo BehaviorSubject no service
   }
 
   onSearch() {
