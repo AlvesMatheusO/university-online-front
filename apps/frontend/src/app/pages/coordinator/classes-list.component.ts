@@ -1,66 +1,72 @@
 // apps/frontend/src/app/pages/coordinator/classes-list.component.ts
 import { Component, OnInit, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { FormsModule } from '@angular/forms';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { ClassService } from 'apps/frontend/src/services/class.service';
 import { ClassCardComponent } from '../../components/card/class-card.component';
-import { Class } from '../../models/class.model';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'app-classes-list',
+  selector: 'app-classes-page',
   standalone: true,
-  imports: [
-    CommonModule,
-    ButtonModule,
-    ProgressSpinnerModule,
-    ClassCardComponent,
-  ],
+  imports: [CommonModule, ClassCardComponent, FormsModule],
   template: `
-    <div class="classes-container">
-      <div class="page-header">
-        <div>
-          <h1>Disciplinas</h1>
-          <p class="subtitle">Gerencie as disciplinas do curso</p>
+    <div class="classes-page">
+      <!-- Barra de pesquisa e filtros -->
+      <div class="search-bar">
+        <div class="search-input">
+          <i class="pi pi-search"></i>
+          <input
+            type="text"
+            placeholder="Buscar turmas..."
+            [(ngModel)]="searchTerm"
+            (input)="onSearch()"
+          />
         </div>
-        <p-button
-          label="Nova Disciplina"
-          icon="pi pi-plus"
-          (onClick)="createClass()"
-        >
-        </p-button>
+        <div class="filters">
+          <select
+            class="filter-select"
+            [(ngModel)]="statusFilter"
+            (change)="onFilterChange()"
+          >
+            <option value="">Todos os status</option>
+            <option value="ATIVA">Ativas</option>
+            <option value="INATIVA">Inativas</option>
+            <option value="ENCERRADA">Encerradas</option>
+          </select>
+          <select
+            class="filter-select"
+            [(ngModel)]="sortBy"
+            (change)="onSortChange()"
+          >
+            <option value="">Ordenar por</option>
+            <option value="subject">Disciplina</option>
+            <option value="professor">Professor</option>
+            <option value="code">Código</option>
+          </select>
+        </div>
       </div>
 
+      <!-- Loading State -->
       @if (loading$ | async) {
-        <div class="loading-container">
-          <p-progressSpinner></p-progressSpinner>
-          <p>Carregando disciplinas...</p>
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Carregando turmas...</p>
         </div>
-      } @else if (classes$ | async; as classes) {
+      } @else if (filteredClasses$ | async; as classes) {
+        <!-- Empty State -->
         @if (classes.length === 0) {
           <div class="empty-state">
             <i class="pi pi-inbox"></i>
-            <h3>Nenhuma disciplina cadastrada</h3>
-            <p>Comece criando sua primeira disciplina</p>
-            <p-button
-              label="Criar Disciplina"
-              icon="pi pi-plus"
-              (onClick)="createClass()"
-            >
-            </p-button>
+            <h3>Nenhuma turma encontrada</h3>
+            <p>Não há turmas que correspondam aos filtros selecionados</p>
           </div>
         } @else {
+          <!-- Grid de Cards -->
           <div class="classes-grid">
             @for (class of classes; track class.id) {
-              <app-class-card
-                [class]="class"
-                (view)="viewClass($event)"
-                (edit)="editClass($event)"
-                (delete)="deleteClass($event)"
-              >
-              </app-class-card>
+              <app-class-card [class]="class"></app-class-card>
             }
           </div>
         }
@@ -69,59 +75,124 @@ import { Subject, takeUntil } from 'rxjs';
   `,
   styles: [
     `
-      .classes-container {
+      .classes-page {
         padding: 2rem;
+        max-width: 1600px;
+        margin: 0 auto;
       }
 
-      .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+      .search-bar {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
         margin-bottom: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       }
 
-      .page-header h1 {
-        font-size: 2rem;
-        font-weight: 700;
-        margin: 0 0 0.5rem 0;
-        color: #2d3748;
+      .search-input {
+        position: relative;
+        margin-bottom: 1rem;
       }
 
-      .subtitle {
-        color: #718096;
-        margin: 0;
+      .search-input i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 1rem;
       }
 
-      .loading-container {
+      .search-input input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.938rem;
+        font-family: 'Roboto', sans-serif;
+        transition: border-color 0.2s;
+      }
+
+      .search-input input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .filters {
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 4rem;
         gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .filter-select {
+        padding: 0.5rem 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-family: 'Roboto', sans-serif;
+        cursor: pointer;
+        background: white;
+        transition: border-color 0.2s;
+      }
+
+      .filter-select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .loading {
+        text-align: center;
+        padding: 4rem;
+        color: #64748b;
+      }
+
+      .spinner {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 1.5rem;
+        border: 4px solid #f3f4f6;
+        border-top-color: #667eea;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .loading p {
+        font-size: 1rem;
+        font-weight: 500;
       }
 
       .empty-state {
         text-align: center;
         padding: 4rem 2rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       }
 
       .empty-state i {
         font-size: 4rem;
         color: #cbd5e0;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
       }
 
       .empty-state h3 {
         font-size: 1.5rem;
         font-weight: 600;
         margin: 0 0 0.5rem 0;
-        color: #2d3748;
+        color: #1e293b;
       }
 
       .empty-state p {
-        color: #718096;
-        margin-bottom: 1.5rem;
+        color: #64748b;
+        margin: 0;
       }
 
       .classes-grid {
@@ -131,18 +202,20 @@ import { Subject, takeUntil } from 'rxjs';
       }
 
       @media (max-width: 768px) {
-        .classes-container {
+        .classes-page {
           padding: 1rem;
-        }
-
-        .page-header {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 1rem;
         }
 
         .classes-grid {
           grid-template-columns: 1fr;
+        }
+
+        .filters {
+          flex-direction: column;
+        }
+
+        .filter-select {
+          width: 100%;
         }
       }
     `,
@@ -150,11 +223,15 @@ import { Subject, takeUntil } from 'rxjs';
 })
 export class ClassesListComponent implements OnInit, OnDestroy {
   private classService = inject(ClassService);
-  private router = inject(Router);
   private destroy$ = new Subject<void>();
 
   classes$ = this.classService.classes$;
   loading$ = this.classService.loading$;
+  filteredClasses$ = this.classService.classes$;
+
+  searchTerm = '';
+  statusFilter = '';
+  sortBy = '';
 
   ngOnInit() {
     this.loadClasses();
@@ -170,39 +247,27 @@ export class ClassesListComponent implements OnInit, OnDestroy {
       .getClasses()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => console.log('Disciplinas carregadas'),
-        error: (error) => console.error('Erro ao carregar:', error),
+        next: (classes) => {
+          console.log('✅ Turmas carregadas:', classes.length);
+        },
+        error: (error) => {
+          console.error('❌ Erro ao carregar turmas:', error);
+        },
       });
   }
 
-  createClass() {
-    this.router.navigate(['/coordinator/classes/new']);
+  onSearch() {
+    // Implementar filtro de busca
+    console.log('Buscando:', this.searchTerm);
   }
 
-  viewClass(classData: Class) {
-    console.log('Visualizar:', classData);
-    this.router.navigate(['/coordinator/classes', classData.id]);
+  onFilterChange() {
+    // Implementar filtro de status
+    console.log('Filtro de status:', this.statusFilter);
   }
 
-  editClass(classData: Class) {
-    console.log('Editar:', classData);
-    this.router.navigate(['/coordinator/classes', classData.id, 'edit']);
-  }
-
-  deleteClass(classData: Class) {
-    if (confirm(`Deseja realmente excluir a disciplina "${classData.name}"?`)) {
-      this.classService
-        .deleteClass(classData.id)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            console.log('Disciplina excluída com sucesso');
-          },
-          error: (error) => {
-            console.error('Erro ao excluir:', error);
-            alert('Erro ao excluir disciplina');
-          },
-        });
-    }
+  onSortChange() {
+    // Implementar ordenação
+    console.log('Ordenar por:', this.sortBy);
   }
 }
