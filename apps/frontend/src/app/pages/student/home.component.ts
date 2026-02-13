@@ -1,8 +1,8 @@
+import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { KeycloakService } from '../../auth/keycloak.service';
 import { ButtonModule } from 'primeng/button';
+import { KeycloakService } from '../../auth/keycloak.service';
 
 @Component({
   selector: 'app-home', // Ajuste o seletor se necessário
@@ -60,7 +60,7 @@ import { ButtonModule } from 'primeng/button';
     </div>
   `,
   styles: [`
-    /* Seus estilos originais da Sidebar */
+   
     .layout { display: flex; height: 100vh; font-family: 'Inter', sans-serif; }
     aside { width: 280px; background: #064e3b; color: white; padding: 24px; display: flex; flex-direction: column; }
     .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 2.5rem; color: #34d399; }

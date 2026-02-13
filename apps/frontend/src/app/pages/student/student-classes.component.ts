@@ -1,5 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { StudentService } from 'apps/frontend/src/services/student.service';
 import { KeycloakService } from '../../auth/keycloak.service';
@@ -41,13 +41,13 @@ import { UserService } from 'apps/frontend/src/services/user.service';
   styles: [
     `
       .student-dashboard {
-        max-width: 1200px; /* Limita a largura para não espalhar demais em telas ultra-wide */
-        margin: 0 auto; /* Centraliza o container na página */
+        max-width: 1200px; 
+        margin: 0 auto; 
         padding: 1rem;
       }
 
       .header-section {
-        text-align: center; /* Centraliza o título e a descrição */
+        text-align: center; 
         margin-bottom: 3rem;
       }
 
@@ -65,8 +65,6 @@ import { UserService } from 'apps/frontend/src/services/user.service';
 
       .classes-grid {
         display: grid;
-        /* auto-fit faz com que os cards tentem preencher o espaço, 
-           mas o justify-content centraliza o grupo todo */
         grid-template-columns: repeat(auto-fit, minmax(320px, 350px));
         gap: 2rem;
         justify-content: center;
@@ -106,7 +104,7 @@ import { UserService } from 'apps/frontend/src/services/user.service';
 export class StudentClassesComponent implements OnInit {
   private studentService = inject(StudentService);
   private keycloak = inject(KeycloakService);
-  private userService = inject(UserService); // Injetando o service de usuário
+  private userService = inject(UserService); 
 
   classes$ = this.studentService.enrolledClasses$;
   loading$ = this.studentService.loading$;
