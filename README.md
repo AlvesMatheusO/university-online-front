@@ -1,282 +1,267 @@
-# Nx Angular Repository
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+# 🎓 University Online - Frontend Monorepo
 
-✨ A repository showcasing key [Nx](https://nx.dev) features for Angular monorepos ✨
-🚀 If you haven't connected to Nx Cloud yet, [complete your setup here](https://cloud.nx.app/setup/connect-workspace/guide). Get faster builds with remote caching, distributed task execution, and self-healing CI. [See how your workspace can benefit](#nx-cloud).
-## 📦 Project Overview
+Este repositório contém o **front-end do Sistema de Gestão Acadêmica University Online**.
+O projeto foi construído utilizando **Nx** para gerenciamento do monorepo e **Angular (Standalone Components)** com arquitetura moderna baseada em Signals.
 
-This repository demonstrates a production-ready Angular monorepo with:
+---
 
-- **2 Applications**
+## 🛠️ Stack Tecnológico & Versões
 
-  - `shop` - Angular e-commerce application with product listings and detail views
-  - `api` - Backend API with Docker support serving product data
+Para garantir compatibilidade e evitar erros de ambiente, utilize as versões abaixo:
 
-- **6 Libraries**
+* **Node.js:** v20.10.0 (LTS Iron) ou superior
+* **NPM:** v10.x ou superior
+* **Angular:** v17+ (uso extensivo de Standalone Components e Signals)
+* **Nx Workspace:** v18+
+* **UI Library:** PrimeNG v17+
+* **Autenticação:** Keycloak (OIDC)
 
-  - `@org/feature-products` - Product listing feature (Angular)
-  - `@org/feature-product-detail` - Product detail feature (Angular)
-  - `@org/data` - Data access layer for shop features
-  - `@org/shared-ui` - Shared UI components
-  - `@org/models` - Shared data models
-  - `@org/products` - API product service library
+---
 
-- **E2E Testing**
-  - `shop-e2e` - Playwright tests for the shop application
+# 🚀 Primeiros Passos (Setup)
 
-## 🚀 Quick Start
+## 1️⃣ Pré-requisitos
+
+Antes de rodar o front-end, certifique-se de que os serviços de apoio estão rodando via Docker:
+
+* **Backend (Quarkus):**
+  `http://localhost:8080`
+
+* **Keycloak:**
+  `http://localhost:8180`
+
+---
+
+## 2️⃣ Configuração do Keycloak
+
+Para que o login funcione corretamente, verifique se o **Realm `academic-system`** foi importado no Keycloak.
+
+### Configuração esperada:
+
+* **Realm:** `academic-system`
+* **Client Frontend:** `academic-frontend` (porta 4200)
+* **Client Backend:** `academic-api` (porta 8080)
+
+---
+
+## 3️⃣ Instalação
+
+Clone o repositório e instale as dependências:
 
 ```bash
-# Clone the repository
-git clone <your-fork-url>
-cd <your-repository-name>
-
-# Install dependencies
-# (Note: You may need --legacy-peer-deps)
+git clone <url-do-repo>
+cd university-online-front
 npm install
-
-# Serve the Angular shop application (this will simultaneously serve the API backend)
-npx nx serve shop
-
-# ...or you can serve the API separately
-npx nx serve api
-
-# Build all projects
-npx nx run-many -t build
-
-# Run tests
-npx nx run-many -t test
-
-# Lint all projects
-npx nx run-many -t lint
-
-# Run e2e tests
-npx nx e2e shop-e2e
-
-# Run tasks in parallel
-
-npx nx run-many -t lint test build e2e --parallel=3
-
-# Visualize the project graph
-npx nx graph
 ```
 
-## ⭐ Featured Nx Capabilities
+---
 
-This repository showcases several powerful Nx features:
+## 4️⃣ Rodando a Aplicação
 
-### 1. 🔒 Module Boundaries
-
-Enforces architectural constraints using tags. Each project has specific dependencies it can use:
-
-- `scope:shared` - Can be used by all projects
-- `scope:shop` - Shop-specific libraries
-- `scope:api` - API-specific libraries
-- `type:feature` - Feature libraries
-- `type:data` - Data access libraries
-- `type:ui` - UI component libraries
-
-**Try it out:**
+Para iniciar o servidor de desenvolvimento:
 
 ```bash
-# See the current project graph and boundaries
-npx nx graph
-
-# View a specific project's details
-npx nx show project shop --web
+npx nx serve frontend
 ```
 
-[Learn more about module boundaries →](https://nx.dev/features/enforce-module-boundaries)
+Acesse:
 
-### 2. 🐳 Docker Integration
+```
+http://localhost:4200
+```
 
-The API project includes Docker support with automated targets and release management:
+---
+
+# 🔐 Acesso & Credenciais de Teste
+
+O sistema possui usuários pré-configurados para diferentes perfis:
+
+| Perfil                | Usuário (E-mail)                                        | Senha | Permissões                                         |
+| --------------------- | ------------------------------------------------------- | ----- | -------------------------------------------------- |
+| 👨‍🎓 **Aluno**       | [joao.almeida@unifor.br](mailto:joao.almeida@unifor.br) | 1234  | Matrícula Online, Visualização de Grade, Histórico |
+| 🧑‍🏫 **Coordenador** | [coord.silva@unifor.br](mailto:coord.silva@unifor.br)   | 1234  | Gestão de Turmas, Professores e Relatórios         |
+| 🔑 **Admin**          | [admin@unifor.br](mailto:admin@unifor.br)               | admin | Acesso total ao sistema                            |
+
+> ⚠️ Caso não consiga logar:
+>
+> * Verifique se o container do Keycloak está rodando
+> * Confirme se o Realm `academic-system` foi criado corretamente
+> * Verifique se as roles `STUDENT`, `COORDINATOR` e `ADMIN` estão configuradas
+
+---
+
+# 📂 Arquitetura do Projeto
+
+A estrutura foi organizada para separar responsabilidades por domínio e papel do usuário:
+
+```
+apps/frontend/src/app/
+├── admin/            # 🔐 Área administrativa
+├── auth/             # 🛡️ Guardas de rotas, Interceptors e Config Keycloak
+├── components/       # 🧩 Componentes reutilizáveis (Dumb Components)
+│   ├── card/
+│   ├── header/
+│   └── modal/
+├── models/           # 📦 Interfaces TypeScript
+├── pages/            # 📱 Telas principais (Smart Components)
+│   ├── coordinator/
+│   └── student/
+└── services/         # 📡 Comunicação HTTP com API Quarkus
+```
+
+---
+
+## 🏗️ Decisões Arquiteturais
+
+### ✔ Standalone Components
+
+Não utilizamos `NgModules`.
+Cada componente importa suas dependências diretamente:
+
+```ts
+imports: [CommonModule, ButtonModule]
+```
+
+---
+
+### ✔ Services
+
+Toda regra de negócio e chamadas HTTP ficam em:
+
+```
+src/app/services
+```
+
+Os componentes apenas consomem os dados via **Observables**.
+
+---
+
+### ✔ Auth Guard
+
+A proteção de rotas é feita via `KeycloakService` na pasta:
+
+```
+src/app/auth
+```
+
+---
+
+# 🔧 Guia de Manutenção
+
+## ➕ Criar uma nova Tela (Page)
+
+Exemplo: Histórico Escolar no módulo do aluno.
+
+### 1️⃣ Gerar componente standalone:
 
 ```bash
-# Build Docker image
-npx nx docker:build api
-
-# Run Docker container
-npx nx docker:run api
-
-# Release with automatic Docker image versioning
-npx nx release
+npx nx g @nx/angular:component pages/student/student-history --project=frontend --standalone
 ```
 
-**Nx Release for Docker:** The repository is configured to use Nx Release for managing Docker image versioning and publishing. When running `nx release`, Docker images for the API project are automatically versioned and published based on the release configuration in `nx.json`. This integrates seamlessly with semantic versioning and changelog generation.
+### 2️⃣ Adicionar rota em `app.routes.ts`:
 
-[Learn more about Docker integration →](https://nx.dev/recipes/nx-release/release-docker-images)
+```ts
+{
+  path: 'history',
+  loadComponent: () =>
+    import('./pages/student/student-history/student-history.component')
+      .then(m => m.StudentHistoryComponent)
+}
+```
 
-### 3. 🎭 Playwright E2E Testing
+---
 
-End-to-end testing with Playwright is pre-configured:
+## ➕ Criar um novo Serviço de Integração
+
+Se criou um novo Controller no backend (ex: `FinanceController`):
 
 ```bash
-# Run e2e tests
-npx nx e2e shop-e2e
-
-# Run e2e tests in CI mode
-npx nx e2e-ci shop-e2e
+npx nx g @nx/angular:service services/finance --project=frontend
 ```
 
-[Learn more about E2E testing →](https://nx.dev/technologies/test-tools/playwright/introduction#e2e-testing)
+> 💡 Sempre injete `HttpClient`
+> 💡 Utilize a URL base configurada
+> ❌ Evite URLs hardcoded
 
-### 4. ⚡ Vitest for Unit Testing
+---
 
-Fast unit testing with Vite for Angular libraries:
+## ➕ Adicionar Componentes do PrimeNG
+
+Não importe módulos globalmente no `app.config.ts`.
+
+Importe apenas no componente que utilizar:
+
+```ts
+import { CalendarModule } from 'primeng/calendar';
+
+@Component({
+  imports: [CalendarModule],
+})
+export class StudentHistoryComponent {}
+```
+
+---
+
+# 🐛 Troubleshooting (Erros Comuns)
+
+## 1️⃣ Loop Infinito de Loading / Tela Branca
+
+**Causa:** Keycloak ainda não inicializou e o componente tenta acessar usuário `null`.
+
+**Solução:**
+
+```ts
+this.keycloak.user$
+  .pipe(filter(user => !!user))
+  .subscribe(...)
+```
+
+---
+
+## 2️⃣ Erro de CORS
+
+**Sintoma:**
+
+```
+Access to XMLHttpRequest blocked by CORS policy
+```
+
+**Solução:**
+O problema está no backend (Quarkus).
+Verifique no `application.properties`:
+
+```
+quarkus.http.cors.origins=http://localhost:4200
+```
+
+---
+
+## 3️⃣ Erro 403 Forbidden
+
+**Sintoma:** Usuário loga mas não carrega dados.
+
+**Solução:**
+
+* Verifique as roles no Keycloak
+* Usuário deve ter `STUDENT` ou `COORDINATOR`
+* Endpoint Java deve ter:
+
+```java
+@RolesAllowed("STUDENT")
+```
+
+---
+
+# 🧪 Testes
+
+O projeto utiliza **Vitest** para testes unitários.
+
+Para executar:
 
 ```bash
-# Test a specific library
-npx nx test data
-
-# Test all projects
-npx nx run-many -t test
+npx nx test frontend
 ```
 
-[Learn more about Vite testing →](https://nx.dev/recipes/vite)
+---
 
-### 5. 🔧 Self-Healing CI
-
-The CI pipeline includes `nx fix-ci` which automatically identifies and suggests fixes for common issues:
-
-```bash
-# In CI, this command provides automated fixes
-npx nx fix-ci
-```
-
-This feature helps maintain a healthy CI pipeline by automatically detecting and suggesting solutions for:
-
-- Missing dependencies
-- Incorrect task configurations
-- Cache invalidation issues
-- Common build failures
-
-[Learn more about self-healing CI →](https://nx.dev/ci/features/self-healing-ci)
-
-## 📁 Project Structure
-
-```
-├── apps/
-│   ├── shop/           [scope:shop]    - Angular e-commerce app
-│   ├── shop-e2e/                       - E2E tests for shop
-│   └── api/            [scope:api]     - Backend API with Docker
-├── libs/
-│   ├── shop/
-│   │   ├── feature-products/        [scope:shop,type:feature] - Product listing
-│   │   ├── feature-product-detail/  [scope:shop,type:feature] - Product details
-│   │   ├── data/                    [scope:shop,type:data]    - Data access
-│   │   └── shared-ui/               [scope:shop,type:ui]      - UI components
-│   ├── api/
-│   │   └── products/    [scope:api]    - Product service
-│   └── shared/
-│       └── models/      [scope:shared,type:data] - Shared models
-├── nx.json             - Nx configuration
-├── tsconfig.json       - TypeScript configuration
-└── eslint.config.mjs   - ESLint with module boundary rules
-```
-
-## 🏷️ Understanding Tags
-
-This repository uses tags to enforce module boundaries:
-
-| Project            | Tags                         | Can Import From              |
-| ------------------ | ---------------------------- | ---------------------------- |
-| `shop`             | `scope:shop`                 | `scope:shop`, `scope:shared` |
-| `api`              | `scope:api`                  | `scope:api`, `scope:shared`  |
-| `feature-products` | `scope:shop`, `type:feature` | `scope:shop`, `scope:shared` |
-| `data`             | `scope:shop`, `type:data`    | `scope:shared`               |
-| `models`           | `scope:shared`, `type:data`  | Nothing (base library)       |
-
-## 📚 Useful Commands
-
-```bash
-# Project exploration
-npx nx graph                                    # Interactive dependency graph
-npx nx list                                     # List installed plugins
-npx nx show project shop --web                 # View project details
-
-# Development
-npx nx serve shop                              # Serve Angular app
-npx nx serve api                               # Serve backend API
-npx nx build shop                              # Build Angular app
-npx nx test data                               # Test a specific library
-npx nx lint feature-products                   # Lint a specific library
-
-# Running multiple tasks
-npx nx run-many -t build                       # Build all projects
-npx nx run-many -t test --parallel=3          # Test in parallel
-npx nx run-many -t lint test build            # Run multiple targets
-
-# Affected commands (great for CI)
-npx nx affected -t build                       # Build only affected projects
-npx nx affected -t test                        # Test only affected projects
-
-# Docker operations
-npx nx docker:build api                        # Build Docker image
-npx nx docker:run api                          # Run Docker container
-```
-
-## 🎯 Adding New Features
-
-### Generate a new Angular application:
-
-```bash
-npx nx g @nx/angular:app my-app
-```
-
-### Generate a new Angular library:
-
-```bash
-npx nx g @nx/angular:lib my-lib
-```
-
-### Generate a new Angular component:
-
-```bash
-npx nx g @nx/angular:component my-component --project=my-lib
-```
-
-### Generate a new API library:
-
-```bash
-npx nx g @nx/node:lib my-api-lib
-```
-
-You can use `npx nx list` to see all available plugins and `npx nx list <plugin-name>` to see all generators for a specific plugin.
-
-## Nx Cloud
-
-Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
-
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## 🔗 Learn More
-
-- [Nx Documentation](https://nx.dev)
-- [Angular Monorepo Tutorial](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial)
-- [Module Boundaries](https://nx.dev/features/enforce-module-boundaries)
-- [Docker Integration](https://nx.dev/recipes/nx-release/release-docker-images)
-- [Playwright Testing](https://nx.dev/technologies/test-tools/playwright/introduction#e2e-testing)
-- [Vite with Angular](https://nx.dev/recipes/vite)
-- [Nx Cloud](https://nx.dev/ci/intro/why-nx-cloud)
-- [Releasing Packages](https://nx.dev/features/manage-releases)
-
-## 💬 Community
-
-Join the Nx community:
-
-- [Discord](https://go.nx.dev/community)
-- [X (Twitter)](https://twitter.com/nxdevtools)
-- [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [YouTube](https://www.youtube.com/@nxdevtools)
-- [Blog](https://nx.dev/blog)
