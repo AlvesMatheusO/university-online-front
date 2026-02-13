@@ -1,4 +1,3 @@
-// apps/frontend/src/app/pages/coordinator/dashboard.component.ts
 import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';

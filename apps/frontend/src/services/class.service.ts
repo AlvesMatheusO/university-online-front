@@ -91,6 +91,19 @@ export class ClassService {
     });
   }
 
+  getScheduleById(id: number): Observable<any> {
+    return this.http
+      .get<any>(`${this.apiUrl}/schedules/${id}`, {
+        headers: this.getHeaders(),
+      })
+      .pipe(
+        catchError((error: unknown) => {
+          console.error(`❌ Erro ao carregar horário ${id}:`, error);
+          return throwError(() => error);
+        }),
+      );
+  }
+
   createClass(
     coordinatorId: string,
     courseId: number,

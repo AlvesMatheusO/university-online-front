@@ -4,7 +4,7 @@ export const coordinatorRoutes: Route[] = [
   {
     path: '',
     loadComponent: () =>
-      import('./coordinator/dashboard.component').then(
+      import('./dashboard.component').then(
         (m) => m.DashboardHomeComponent,
       ),
     children: [
@@ -16,7 +16,7 @@ export const coordinatorRoutes: Route[] = [
       {
         path: 'classes',
         loadComponent: () =>
-          import('./coordinator/classes-list.component').then(
+          import('./classes-list.component').then(
             (m) => m.ClassesListComponent,
           ),
       },

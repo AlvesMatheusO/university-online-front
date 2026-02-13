@@ -1,4 +1,3 @@
-// apps/frontend/src/app/app.routes.ts
 import { Route } from '@angular/router';
 import { roleGuard } from './auth/role.guard';
 
@@ -19,19 +18,19 @@ export const appRoutes: Route[] = [
     path: 'admin',
     canActivate: [roleGuard('ADMIN')],
     loadComponent: () => 
-      import('./admin/admin.component').then((m) => m.AdminComponent),  // ← MUDANÇA AQUI
+      import('./admin/admin.component').then((m) => m.AdminComponent),  
   },
   {
     path: 'coordinator',
     canActivate: [roleGuard('COORDINATOR')],
     loadChildren: () =>
-      import('./pages/coordinator.routes').then((m) => m.coordinatorRoutes),
+      import('./pages/coordinator/coordinator.routes').then((m) => m.coordinatorRoutes),
   },
   {
     path: 'student',
     canActivate: [roleGuard('STUDENT')],
-    loadComponent: () =>
-      import('./pages/student.component').then((m) => m.StudentComponent),
+    loadChildren: () =>
+      import('./pages/student/student.routes').then((m) => m.studentRoutes),
   },
   {
     path: 'unauthorized',
